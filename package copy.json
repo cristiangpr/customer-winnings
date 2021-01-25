@@ -10,14 +10,12 @@
     "test": "jest --detectOpenHandles --watchAll=false --forceExit"
   },
   "dependencies": {
-    "@apollo/client": "^3.3.7",
     "@svgr/webpack": "^5.5.0",
-    "bootstrap": "^4.6.0",
+    "@tomfrench/matic-proofs": "0.1.0-alpha.20",
     "ethers": "^5.0.26",
-    "graphql": "^15.4.0",
+    "merkle-patricia-tree": "^4.0.0",
     "next": "10.0.5",
     "react": "17.0.1",
-    "react-bootstrap": "^1.4.3",
     "react-dom": "17.0.1",
     "sass": "^1.32.5",
     "typescript": "^4.1.3"
