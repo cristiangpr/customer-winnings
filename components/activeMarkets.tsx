@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Market } from "../utils/constants";
 import { searchMarkets } from "../utils";
-import { getModalProps } from "../utils/hooks";
 import BalanceModal from "./WinningsModal";
 import styles from "../styles/MarketsBoard.module.scss";
 

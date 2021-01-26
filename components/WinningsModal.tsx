@@ -1,20 +1,16 @@
-import React, { useState } from "react";
-import { Button, Alert, Modal } from "react-bootstrap";
+import React, { PropsWithChildren } from "react";
+import { Dialog } from "@material-ui/core";
 import {
     ApolloClient,
     InMemoryCache,
     ApolloProvider,
     useQuery,
     gql,
-} from "@apollo/client"; // TODO: remove bootstrap
+} from "@apollo/client";
+import styles from "./WinningsModal.module.scss";
+import { getWinnings } from "../utils";
 
-type ModalProps = {
-    setShow: React.Dispatch<React.SetStateAction<boolean>>;
-    question: string;
-    marketAddress: string;
-    show: boolean;
-};
-type WinningsProps = {
+type Props = {
     marketAddress: string;
 };
 
@@ -24,92 +20,87 @@ const client = new ApolloClient({
     cache: new InMemoryCache(),
 });
 
-const MarketWinnings: React.FC<WinningsProps> = ({
+const LeaderBoard: React.FC<Props> = ({
     marketAddress,
-}): JSX.Element => {
-    // Don't know how to pass this to the query. currently I am fetching all positions
-
-    const { loading, error, data } = useQuery(gql`
-        {
-            marketPositions(orderBy: netQuantity) {
-                user {
-                    id
-                }
-                valueBought
-                netValue
-                netQuantity
-                market {
-                    outcomeTokenPrices
+}): JSX.Element[] | JSX.Element => {
+    const { loading, error, data } = useQuery(
+        gql`
+            query positions($marketAddress: String!) {
+                marketPositions(where: { market: $marketAddress }) {
+                    user {
+                        id
+                    }
+                    outcomeIndex
+                    valueBought
+                    valueSold
+                    netValue
+                    netQuantity
+                    market {
+                        outcomeTokenPrices
+                    }
                 }
             }
-        }
-    `);
+        `,
+        { variables: { marketAddress: marketAddress.toLowerCase() } },
+    );
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error :(</p>;
-  
+    if (error) return <p>{error.message}</p>;
+    console.log(data);
+    const winningsArray = [];
+    data.marketPositions.map((position) => {
+        const winnings = getWinnings(position);
+        const obj = {
+            user: position.user.id,
+            winnings,
+        };
+        winningsArray.push(obj);
+        return winningsArray;
+    });
+   
+    winningsArray.sort((a, b) => (+a.winnings > +b.winnings ? -1 : 1));
+   // TODO filter out NaN
 
-    return data.marketPositions.map(
-        ({
-            user,
-            valueBought,
-            netValue,
-            netQuantity,
-            outcomeTokenPrices,
-            i,
-        }) => (
-            <div key={i}>
-                <p>User: {user.id}</p>
-                <p>netValue: {netValue}</p>
-            </div>
-        ),
-    );
+    return winningsArray.map(({ user, winnings, i }) => (
+        <table className={styles.table}>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Winnings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr key={i}>
+                    <td>{user}</td>
+                    <td>{winnings}</td>
+                </tr>
+            </tbody>
+        </table>
+    ));
 };
 
-const WinningsModal: React.FC<ModalProps> = ({
-    setShow,
-    question,
-    marketAddress,
+const LeaderBoardModal = ({
     show,
-}): JSX.Element => {
-    const [errorMessage, setErrorMessage] = useState<string>("");
-
+    setShow,
+    children,
+    marketAddress,
+}: PropsWithChildren<{
+    show: boolean;
+    setShow: () => void;
+    question: string;
+    marketAddress: string;
+}>) => {
     return (
-        <Modal show={show} onHide={setShow}>
-            <Modal.Header closeButton>
-                <Modal.Title>Market Positions</Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-                <h6> {question} </h6>
-                <ApolloProvider client={client}>
-                    <MarketWinnings marketAddress={marketAddress} />
-                </ApolloProvider>
-                {errorMessage && (
-                    <Alert
-                        variant="danger"
-                        onClose={() => setErrorMessage("")}
-                        dismissible
-                    >
-                        <Alert.Heading>
-                            Oh snap! You got an error!
-                        </Alert.Heading>
-                        <p>{errorMessage}</p>
-                    </Alert>
-                )}
-            </Modal.Body>
-            <Modal.Footer>
-                <Button
-                    variant="secondary"
-                    onClick={() => {
-                        setShow(false);
-                        setErrorMessage("");
-                    }}
-                >
-                    Close
-                </Button>
-            </Modal.Footer>
-        </Modal>
+        <Dialog fullScreen open={show} onClose={setShow}>
+            <div className={styles.inner}>
+                <div className={styles.header} />
+                <main className={styles.body}>
+                    <ApolloProvider client={client}>
+                        <LeaderBoard marketAddress={marketAddress} />
+                    </ApolloProvider>
+                </main>
+            </div>
+        </Dialog>
     );
 };
-export default WinningsModal;
+export default LeaderBoardModal;

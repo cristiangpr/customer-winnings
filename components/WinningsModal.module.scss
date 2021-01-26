@@ -1,0 +1,94 @@
+.modal {
+    .inner {
+        left: calc(50vw - min(100vw - 40px, 495px) / 2);
+        margin: auto;
+        max-width: calc(100vw - 40px);
+        position: absolute;
+        top: 25px;
+        width: 495px;
+        overflow: hidden;
+
+        .header {
+            background-color: black;
+            padding: 3rem 2rem;
+            //            padding: 47px 20px 137px;
+
+            h3 {
+                color: white;
+                font-size: 24px;
+                font-weight: 500;
+                line-height: 35px;
+                margin: 0;
+                text-align: center;
+            }
+        }
+
+        .body {
+            background: white;
+            padding: 26px 34px 24px;
+
+            &.longHeader {
+                background: linear-gradient(
+                    to bottom,
+                    black,
+                    black 20%,
+                    white 20%,
+                    white
+                );
+            }
+        }
+    }
+}
+table.table {
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    width: 100%;
+
+    thead {
+        background: white;
+        border-top: 1px solid #dedede;
+        border-bottom: 1px solid #dedede;
+        margin: 0;
+        padding: 0;
+
+        th {
+            padding: 0.5rem;
+            margin: 0;
+        }
+    }
+
+    tbody {
+        tr {
+            td {
+                padding: 1rem;
+
+                &.textDown {
+                    color: red;
+                }
+                &.textUp {
+                    color: green;
+                }
+
+                &.arrowDown {
+                    white-space: nowrap;
+                    &::after {
+                        content: " ↓";
+                        color: red;
+                        font-weight: bold;
+                        font-size: 1.2rem;
+                    }
+                }
+
+                &.arrowUp {
+                    white-space: nowrap;
+                    &::after {
+                        content: " ↑";
+                        color: green;
+                        font-weight: bold;
+                        font-size: 1.2rem;
+                    }
+                }
+            }
+        }
+    }
+}
