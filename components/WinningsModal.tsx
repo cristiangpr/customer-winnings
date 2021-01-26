@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from "react";
-import { Dialog, IconButton } from "@material-ui/core";
-import CloseIcon from '@material-ui/icons/Close';
+import { Dialog } from "@material-ui/core";
+
 import {
     ApolloClient,
     InMemoryCache,
