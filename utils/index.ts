@@ -23,9 +23,17 @@ export function searchMarkets<data>(
     });
 }
 /**
- *
+ *@function getWinnings - calculates winnings from graphQl query result
+ @param {Object} - the market position object
  */
-export const getWinnings = (position) => {
+export const getWinnings = (position: {
+    user?: { id: string };
+    netQuantity?: string;
+    market?: any;
+    outcomeIndex?: string;
+    valueSold?: string;
+    valueBought?: string;
+}) => {
     return (
         (+position.netQuantity *
             +position.market.outcomeTokenPrices[position.outcomeIndex] +

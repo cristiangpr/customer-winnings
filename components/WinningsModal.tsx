@@ -1,5 +1,6 @@
 import React, { PropsWithChildren } from "react";
-import { Dialog } from "@material-ui/core";
+import { Dialog, IconButton } from "@material-ui/core";
+import CloseIcon from '@material-ui/icons/Close';
 import {
     ApolloClient,
     InMemoryCache,
@@ -22,7 +23,7 @@ const client = new ApolloClient({
 
 const LeaderBoard: React.FC<Props> = ({
     marketAddress,
-}): JSX.Element[] | JSX.Element => {
+}):  JSX.Element => {
     const { loading, error, data } = useQuery(
         gql`
             query positions($marketAddress: String!) {
@@ -48,7 +49,7 @@ const LeaderBoard: React.FC<Props> = ({
     if (error) return <p>{error.message}</p>;
     console.log(data);
     const winningsArray = [];
-    data.marketPositions.map((position) => {
+    data.marketPositions.map((position: { user: { id: string; }; }) => {
         const winnings = getWinnings(position);
         const obj = {
             user: position.user.id,
@@ -61,7 +62,8 @@ const LeaderBoard: React.FC<Props> = ({
     winningsArray.sort((a, b) => (+a.winnings > +b.winnings ? -1 : 1));
    // TODO filter out NaN
 
-    return winningsArray.map(({ user, winnings, i }) => (
+    return <>{winningsArray.map(({ user, winnings, i }) => (
+        
         <table className={styles.table}>
             <thead>
                 <tr>
@@ -76,24 +78,24 @@ const LeaderBoard: React.FC<Props> = ({
                 </tr>
             </tbody>
         </table>
-    ));
+       
+    ))
+    } </>
 };
 
 const LeaderBoardModal = ({
     show,
     setShow,
-    children,
     marketAddress,
 }: PropsWithChildren<{
     show: boolean;
-    setShow: () => void;
+    setShow: React.Dispatch<React.SetStateAction<boolean>>;
     question: string;
     marketAddress: string;
 }>) => {
     return (
         <Dialog fullScreen open={show} onClose={setShow}>
             <div className={styles.inner}>
-                <div className={styles.header} />
                 <main className={styles.body}>
                     <ApolloProvider client={client}>
                         <LeaderBoard marketAddress={marketAddress} />
