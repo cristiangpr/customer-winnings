@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from "react";
-import { Dialog } from "@material-ui/core";
-
+import { Dialog, IconButton } from "@material-ui/core";
+import CloseIcon from "@material-ui/icons/Close";
 import {
     ApolloClient,
     InMemoryCache,
@@ -21,9 +21,7 @@ const client = new ApolloClient({
     cache: new InMemoryCache(),
 });
 
-const LeaderBoard: React.FC<Props> = ({
-    marketAddress,
-}):  JSX.Element => {
+const LeaderBoard: React.FC<Props> = ({ marketAddress }): JSX.Element => {
     const { loading, error, data } = useQuery(
         gql`
             query positions($marketAddress: String!) {
@@ -49,7 +47,7 @@ const LeaderBoard: React.FC<Props> = ({
     if (error) return <p>{error.message}</p>;
     console.log(data);
     const winningsArray = [];
-    data.marketPositions.map((position: { user: { id: string; }; }) => {
+    data.marketPositions.map((position: { user: { id: string } }) => {
         const winnings = getWinnings(position);
         const obj = {
             user: position.user.id,
@@ -58,29 +56,30 @@ const LeaderBoard: React.FC<Props> = ({
         winningsArray.push(obj);
         return winningsArray;
     });
-   
-    winningsArray.sort((a, b) => (+a.winnings > +b.winnings ? -1 : 1));
-   // TODO filter out NaN
 
-    return <>{winningsArray.map(({ user, winnings, i }) => (
-        
-        <table className={styles.table}>
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Winnings</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr key={i}>
-                    <td>{user}</td>
-                    <td>{winnings}</td>
-                </tr>
-            </tbody>
-        </table>
-       
-    ))
-    } </>
+    winningsArray.sort((a, b) => (+a.winnings > +b.winnings ? -1 : 1));
+    // TODO filter out NaN
+
+    return (
+        <>
+            {winningsArray.map(({ user, winnings, i }) => (
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Winnings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr key={i}>
+                            <td>{user}</td>
+                            <td>{winnings}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            ))}{" "}
+        </>
+    );
 };
 
 const LeaderBoardModal = ({
@@ -96,6 +95,16 @@ const LeaderBoardModal = ({
     return (
         <Dialog fullScreen open={show} onClose={setShow}>
             <div className={styles.inner}>
+                <IconButton
+                    edge="start"
+                    color="inherit"
+                    onClick={() => {
+                        setShow(false);
+                    }}
+                    aria-label="close"
+                >
+                    <CloseIcon />
+                </IconButton>
                 <main className={styles.body}>
                     <ApolloProvider client={client}>
                         <LeaderBoard marketAddress={marketAddress} />

@@ -29,6 +29,7 @@ const ActiveMarkets: React.FC<Props> = ({ data, query }): JSX.Element => {
             <div
                 className={styles.MarketWidget}
                 role="button"
+                tabIndex={0}
                 style={{ cursor: "pointer" }}
                 onClick={() => handleClick({ market })}
                 key={market.id}
