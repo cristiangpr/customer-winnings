@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 
 /**
  * @function searchMarkets - This function is called by typing in the search input. It searches market questions and descriptions for matches
@@ -24,9 +24,31 @@ export function searchMarkets<data>(
         return false;
     });
 }
+
+// Following two functions taken from https://github.com/TokenUnion/amm-maths/blob/master/src/utils.ts by Tom French
+/**
+ * Performs multiplication between a BigNumber and a decimal number while temporarily scaling the decimal to preserve precision
+ * @param a - a BigNumber to multiply by b
+ * @param b - a decimal by which to multiple a by.
+ * @param scale - the factor by which to scale the numerator by before division
+ */
+const mulBN = (a: BigNumber, b: number, scale = 10000): BigNumber => {
+    return a.mul(Math.round(b * scale)).div(scale);
+};
+
+/**
+ * Performs division between two BigNumbers while temporarily scaling the numerator to preserve precision
+ * @param a - the numerator
+ * @param b - the denominator
+ * @param scale - the factor by which to scale the numerator by before division
+ */
+const divBN = (a: BigNumber, b: BigNumberish, scale = 10000): number => {
+    return a.mul(scale).div(b).toNumber() / scale;
+};
+
 /**
  *@function getEarnings - calculates winnings from graphQl query result
- @param {Object} - the market position object
+ @param {Object} position - the market position object
  */
 export const getEarnings = (position: {
     user?: { id: string };
@@ -36,19 +58,18 @@ export const getEarnings = (position: {
     valueSold?: string;
     valueBought?: string;
 }) => {
-    const netQuantity = ethers.BigNumber.from(position.netQuantity);
-    const outcome = ethers.utils.parseUnits(
-        position.market.outcomeTokenPrices[position.outcomeIndex],
-    );
-    const outcomeTokenPrice = ethers.BigNumber.from(outcome);
-    const valueSold = ethers.BigNumber.from(position.valueSold);
-    const valueBought = ethers.BigNumber.from(position.valueBought);
-    return netQuantity.mul(outcomeTokenPrice.add(valueSold).sub(valueBought));
+    const netQuantity = BigNumber.from(position.netQuantity);
+    const outcomeTokenPrice =
+        position.market.outcomeTokenPrices[position.outcomeIndex];
+    const valueSold = BigNumber.from(position.valueSold);
+    const valueBought = BigNumber.from(position.valueBought);
+    const netValue = mulBN(netQuantity, outcomeTokenPrice);
+    return netValue.add(valueSold).sub(valueBought).toNumber();
 };
 
 /**
  *@function getROI - calculates ROI from graphQl query result
- @param {Object} - the market position object
+ @param {Object} position - the market position object
  */
 export const getROI = (position: {
     user?: { id: string };
@@ -58,15 +79,12 @@ export const getROI = (position: {
     valueSold?: string;
     valueBought?: string;
 }) => {
-    const netQuantity = ethers.BigNumber.from(position.netQuantity);
-    const outcome = ethers.utils.parseUnits(
-        position.market.outcomeTokenPrices[position.outcomeIndex],
-    );
-    const outcomeTokenPrice = ethers.BigNumber.from(outcome);
-    const valueSold = ethers.BigNumber.from(position.valueSold);
-    const valueBought = ethers.BigNumber.from(position.valueBought);
-    return netQuantity
-        .mul(outcomeTokenPrice.add(valueSold))
-        .div(valueBought)
-        .mul(100);
+    const netQuantity = BigNumber.from(position.netQuantity);
+    const outcomeTokenPrice =
+        position.market.outcomeTokenPrices[position.outcomeIndex];
+    const valueSold = BigNumber.from(position.valueSold);
+    const valueBought = BigNumber.from(position.valueBought);
+    const netValue = mulBN(netQuantity, outcomeTokenPrice);
+    const netEarnings = netValue.add(valueSold).sub(valueBought);
+    return divBN(netEarnings, valueBought) * 100;
 };

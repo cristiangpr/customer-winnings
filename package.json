@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.3.7",
+    "@ethersproject/bignumber": "^5.0.13",
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
     "@svgr/webpack": "^5.5.0",
