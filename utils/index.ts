@@ -1,4 +1,5 @@
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+import * as _ from "lodash";
 
 /**
  * @function searchMarkets - This function is called by typing in the search input. It searches market questions and descriptions for matches
@@ -87,4 +88,80 @@ export const getROI = (position: {
     const netValue = mulBN(netQuantity, outcomeTokenPrice);
     const netEarnings = netValue.add(valueSold).sub(valueBought);
     return divBN(netEarnings, valueBought) * 100;
+};
+
+/**
+ * @function getAllPositions - constructs an array of objects representing all market positions
+ * @param {Object} data - the data fetched by graphQL query from polymarket subgraph
+ *
+ */
+export const getAllPositions = (data) => {
+    const allPositions = [];
+    data.marketPositions.forEach((position) => {
+        const earnings = getEarnings(position);
+        const roi = getROI(position);
+        const positionObject = {
+            user: position.user.id,
+            earnings,
+            invested: position.valueBought,
+            roi
+          
+        };
+
+        allPositions.push(positionObject);
+    });
+    return allPositions;
+};
+
+
+/**
+ * @function getAggregatedPositions - finds positions by user and aggregates the earnings and investment
+ * @param {Array} allPositions - array of all market position objects
+ *
+ */
+export const getAggregatedPositions = (allPositions) => {
+    const aggregatedPositions = [];
+    const positionsByUser = _.groupBy(
+        allPositions,
+        (position) => position.user,
+    );
+
+    Object.values(positionsByUser).forEach((position) => {
+    
+        const totalInvested = Object.values(position).reduce(
+            (t, { invested }) => Number(t) + Number(invested),
+            0,
+        );
+        const totalEarnings = Object.values(position).reduce(
+            (t, { earnings }) => Number(t) + Number(earnings),
+            0,
+        );
+        const totalROI = Object.values(position).reduce(
+            (t, { roi }) => Number(t) + Number(roi),
+            0,
+        );
+      
+        const obj = {
+            user: position[0].user,
+            invested: totalInvested,
+            earnings: totalEarnings,
+            roi: totalROI,
+        };
+        aggregatedPositions.push(obj);
+    });
+    console.log(aggregatedPositions);
+    return aggregatedPositions;
+};
+
+/**
+ * @function getTopTen - sorts aggregated positions by earnings and slices top 10
+ * @param {Array} aggregatedPositions - array of all aggregated market position objects
+ *
+ */
+export const getTopTen = (aggregatedPositions): any => {
+    aggregatedPositions.sort((a, b) =>
+        Number(a.earnings) > Number(b.earnings) ? -1 : 1,
+    );
+    const topTen = aggregatedPositions.slice(0, 10);
+    return topTen;
 };

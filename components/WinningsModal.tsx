@@ -9,7 +9,7 @@ import {
     gql,
 } from "@apollo/client";
 import styles from "./WinningsModal.module.scss";
-import { getEarnings, getROI } from "../utils";
+import { getAllPositions, getAggregatedPositions, getTopTen } from "../utils";
 
 type Props = {
     marketAddress: string;
@@ -25,14 +25,13 @@ const LeaderBoard: React.FC<Props> = ({ marketAddress }): JSX.Element => {
     const { loading, error, data } = useQuery(
         gql`
             query positions($marketAddress: String!) {
-                marketPositions(where: { market: $marketAddress }) {
+                marketPositions(where: { market: $marketAddress  valueBought_gt: 0 }) {
                     user {
                         id
                     }
                     outcomeIndex
                     valueBought
                     valueSold
-                    netValue
                     netQuantity
                     market {
                         outcomeTokenPrices
@@ -45,31 +44,16 @@ const LeaderBoard: React.FC<Props> = ({ marketAddress }): JSX.Element => {
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error.message}</p>;
-    console.log(data);
-    const leaderBoardArray = [];
-    data.marketPositions
-        .filter((position: { valueBought: string }) => {
-            return position.valueBought > "0";
-        })
-        .map((position: { user: { id: string }; valueBought: string }) => {
-            const earnings = getEarnings(position);
-            const roi = getROI(position);
-            const leaderBoardRow = {
-                user: position.user.id,
-                earnings,
-                invested: position.valueBought,
-                roi,
-            };
-            leaderBoardArray.push(leaderBoardRow);
-            return leaderBoardArray;
-        });
-
-    leaderBoardArray.sort((a, b) => (+a.earnings > +b.earnings ? -1 : 1));
-    const top10 = leaderBoardArray.slice(0, 10);
+    console.log(data)
+    const allPositions = getAllPositions(data);
+    console.log(allPositions)
+    const aggregatedPositions = getAggregatedPositions(allPositions);
+    const topTen = getTopTen(aggregatedPositions);
+ 
 
     return (
         <>
-            {top10.map(({ user, earnings, invested, roi }) => (
+            {topTen.map(({ user, earnings, invested, roi }) => (
                 <table className={styles.table}>
                     <thead>
                         <tr>
