@@ -47,27 +47,29 @@ const LeaderBoard: React.FC<Props> = ({ marketAddress }): JSX.Element => {
     if (error) return <p>{error.message}</p>;
     console.log(data);
     const leaderBoardArray = [];
-    data.marketPositions.filter((position: { valueBought: string }) => {return position.valueBought > "0"}).map((position: { user: { id: string }, valueBought: string}) => {
-        const earnings = getEarnings(position);
-        const roi = getROI(position);
-        const leaderBoardRow = {
-            user: position.user.id,
-            earnings,
-            invested: position.valueBought,
-            roi
-        
-        };
-        leaderBoardArray.push(leaderBoardRow);
-        return leaderBoardArray;
-    });
+    data.marketPositions
+        .filter((position: { valueBought: string }) => {
+            return position.valueBought > "0";
+        })
+        .map((position: { user: { id: string }; valueBought: string }) => {
+            const earnings = getEarnings(position);
+            const roi = getROI(position);
+            const leaderBoardRow = {
+                user: position.user.id,
+                earnings,
+                invested: position.valueBought,
+                roi,
+            };
+            leaderBoardArray.push(leaderBoardRow);
+            return leaderBoardArray;
+        });
 
     leaderBoardArray.sort((a, b) => (+a.earnings > +b.earnings ? -1 : 1));
-    let top10 = leaderBoardArray.slice(0, 10);
-  
+    const top10 = leaderBoardArray.slice(0, 10);
 
     return (
         <>
-            {top10.map(({ user, earnings, invested, roi}) => (
+            {top10.map(({ user, earnings, invested, roi }) => (
                 <table className={styles.table}>
                     <thead>
                         <tr>

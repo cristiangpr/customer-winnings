@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 
-
 /**
  * @function searchMarkets - This function is called by typing in the search input. It searches market questions and descriptions for matches
  * @param {Array} object - the array of market objects fetched by getStaticProps from the api
@@ -38,21 +37,13 @@ export const getEarnings = (position: {
     valueBought?: string;
 }) => {
     const netQuantity = ethers.BigNumber.from(position.netQuantity);
-    const outcome = ethers.utils.parseUnits(position.market.outcomeTokenPrices[position.outcomeIndex]);
+    const outcome = ethers.utils.parseUnits(
+        position.market.outcomeTokenPrices[position.outcomeIndex],
+    );
     const outcomeTokenPrice = ethers.BigNumber.from(outcome);
-    const valueSold =  ethers.BigNumber.from(position.valueSold);
-    const valueBought =  ethers.BigNumber.from(position.valueBought);
-    return (
-        netQuantity.mul(
-            outcomeTokenPrice.add(
-                valueSold
-            
-        ).sub(
-            valueBought
-        )
-       
-    )
-    )
+    const valueSold = ethers.BigNumber.from(position.valueSold);
+    const valueBought = ethers.BigNumber.from(position.valueBought);
+    return netQuantity.mul(outcomeTokenPrice.add(valueSold).sub(valueBought));
 };
 
 /**
@@ -68,20 +59,14 @@ export const getROI = (position: {
     valueBought?: string;
 }) => {
     const netQuantity = ethers.BigNumber.from(position.netQuantity);
-    const outcome = ethers.utils.parseUnits(position.market.outcomeTokenPrices[position.outcomeIndex]);
-    const outcomeTokenPrice = ethers.BigNumber.from(outcome);
-    const valueSold =  ethers.BigNumber.from(position.valueSold);
-    const valueBought =  ethers.BigNumber.from(position.valueBought);
-    return (
-        netQuantity.mul(
-            outcomeTokenPrice.add(
-                valueSold
-            )
-        ).div(
-            valueBought
-        ).mul(
-           100 
-        )
-       
+    const outcome = ethers.utils.parseUnits(
+        position.market.outcomeTokenPrices[position.outcomeIndex],
     );
+    const outcomeTokenPrice = ethers.BigNumber.from(outcome);
+    const valueSold = ethers.BigNumber.from(position.valueSold);
+    const valueBought = ethers.BigNumber.from(position.valueBought);
+    return netQuantity
+        .mul(outcomeTokenPrice.add(valueSold))
+        .div(valueBought)
+        .mul(100);
 };
