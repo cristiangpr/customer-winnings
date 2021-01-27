@@ -1,3 +1,6 @@
+import { ethers } from "ethers";
+
+
 /**
  * @function searchMarkets - This function is called by typing in the search input. It searches market questions and descriptions for matches
  * @param {Array} object - the array of market objects fetched by getStaticProps from the api
@@ -23,10 +26,10 @@ export function searchMarkets<data>(
     });
 }
 /**
- *@function getWinnings - calculates winnings from graphQl query result
+ *@function getEarnings - calculates winnings from graphQl query result
  @param {Object} - the market position object
  */
-export const getWinnings = (position: {
+export const getEarnings = (position: {
     user?: { id: string };
     netQuantity?: string;
     market?: any;
@@ -34,10 +37,51 @@ export const getWinnings = (position: {
     valueSold?: string;
     valueBought?: string;
 }) => {
+    const netQuantity = ethers.BigNumber.from(position.netQuantity);
+    const outcome = ethers.utils.parseUnits(position.market.outcomeTokenPrices[position.outcomeIndex]);
+    const outcomeTokenPrice = ethers.BigNumber.from(outcome);
+    const valueSold =  ethers.BigNumber.from(position.valueSold);
+    const valueBought =  ethers.BigNumber.from(position.valueBought);
     return (
-        (+position.netQuantity *
-            +position.market.outcomeTokenPrices[position.outcomeIndex] +
-            +position.valueSold) /
-        +position.valueBought
+        netQuantity.mul(
+            outcomeTokenPrice.add(
+                valueSold
+            
+        ).sub(
+            valueBought
+        )
+       
+    )
+    )
+};
+
+/**
+ *@function getROI - calculates ROI from graphQl query result
+ @param {Object} - the market position object
+ */
+export const getROI = (position: {
+    user?: { id: string };
+    netQuantity?: string;
+    market?: any;
+    outcomeIndex?: string;
+    valueSold?: string;
+    valueBought?: string;
+}) => {
+    const netQuantity = ethers.BigNumber.from(position.netQuantity);
+    const outcome = ethers.utils.parseUnits(position.market.outcomeTokenPrices[position.outcomeIndex]);
+    const outcomeTokenPrice = ethers.BigNumber.from(outcome);
+    const valueSold =  ethers.BigNumber.from(position.valueSold);
+    const valueBought =  ethers.BigNumber.from(position.valueBought);
+    return (
+        netQuantity.mul(
+            outcomeTokenPrice.add(
+                valueSold
+            )
+        ).div(
+            valueBought
+        ).mul(
+           100 
+        )
+       
     );
 };

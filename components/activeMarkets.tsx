@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Market } from "../utils/constants";
 import { searchMarkets } from "../utils";
 import BalanceModal from "./WinningsModal";
-import styles from "../styles/MarketsBoard.module.scss";
+import styles from "./MarketsBoard.module.scss";
 
 type Props = {
     data: Market[];

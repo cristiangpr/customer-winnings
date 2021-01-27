@@ -9,7 +9,7 @@ import {
     gql,
 } from "@apollo/client";
 import styles from "./WinningsModal.module.scss";
-import { getWinnings } from "../utils";
+import { getEarnings, getROI } from "../utils";
 
 type Props = {
     marketAddress: string;
@@ -46,34 +46,43 @@ const LeaderBoard: React.FC<Props> = ({ marketAddress }): JSX.Element => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error.message}</p>;
     console.log(data);
-    const winningsArray = [];
-    data.marketPositions.map((position: { user: { id: string } }) => {
-        const winnings = getWinnings(position);
-        const obj = {
+    const leaderBoardArray = [];
+    data.marketPositions.filter((position: { valueBought: string }) => {return position.valueBought > "0"}).map((position: { user: { id: string }, valueBought: string}) => {
+        const earnings = getEarnings(position);
+        const roi = getROI(position);
+        const leaderBoardRow = {
             user: position.user.id,
-            winnings,
+            earnings,
+            invested: position.valueBought,
+            roi
+        
         };
-        winningsArray.push(obj);
-        return winningsArray;
+        leaderBoardArray.push(leaderBoardRow);
+        return leaderBoardArray;
     });
 
-    winningsArray.sort((a, b) => (+a.winnings > +b.winnings ? -1 : 1));
-    // TODO filter out NaN
+    leaderBoardArray.sort((a, b) => (+a.earnings > +b.earnings ? -1 : 1));
+    let top10 = leaderBoardArray.slice(0, 10);
+  
 
     return (
         <>
-            {winningsArray.map(({ user, winnings, i }) => (
+            {top10.map(({ user, earnings, invested, roi}) => (
                 <table className={styles.table}>
                     <thead>
                         <tr>
                             <th>User</th>
-                            <th>Winnings</th>
+                            <th>Invested</th>
+                            <th>Earnings</th>
+                            <th>Return</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr key={i}>
+                        <tr key={user}>
                             <td>{user}</td>
-                            <td>{winnings}</td>
+                            <td>{invested}</td>
+                            <td>{earnings}</td>
+                            <td>{roi}%</td>
                         </tr>
                     </tbody>
                 </table>

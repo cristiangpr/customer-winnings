@@ -1,5 +1,7 @@
+import { Home } from "@material-ui/icons";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import styles from "../styles/Home.module.scss"
 
 interface ISearchProps {
     onChangeSearchQuery: (searchQuery: string) => void;
@@ -16,9 +18,12 @@ export default function SearchInput(props: ISearchProps) {
     }, [searchQuery, onChangeSearchQuery]);
 
     return (
-        <>
+        <><div className={styles.grid}>
             <label htmlFor="search" className="mt-3">
                 Search Markets
+            </label>
+        </div>
+        
                 <input
                     id="search"
                     className="form-control full-width"
@@ -27,7 +32,7 @@ export default function SearchInput(props: ISearchProps) {
                     aria-label="Search"
                     onChange={(event) => setSearchQuery(event.target.value)}
                 />
-            </label>
+         
         </>
     );
 }
